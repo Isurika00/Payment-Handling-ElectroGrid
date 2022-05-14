@@ -1,109 +1,164 @@
-$(document).ready(function(){
-    $("#alertSuccess").hide();
-    $("#alertError").hide();
-});
+$(document).ready(function() {
+    if ($('#alertSuccess').text().trim() == "") {
+        $('#alertSuccess').hide();
+    }
 
-// SAVE Card============================================
-$(document).on("click", "#btnSave", function(event) {
-    // Clear status messages
+    $('#alertError').hide();
+})
+
+// SAVE
+$(document).on("click","#btnSave", function(event) {
+    // Clear alerts
     $("#alertSuccess").text(""); 
     $("#alertSuccess").hide(); 
     $("#alertError").text(""); 
     $("#alertError").hide();
 
     // Form validation
-    var status = validateCardForm();
-
-    // If not valid
-    if (status != true) {
+    var status = validateCardForm(); 
+    if (status != true) 
+    { 
         $("#alertError").text(status); 
         $("#alertError").show(); 
-        return;
-    }
-    
-    // If valid
-    // Generate the card and append
-    var card = getUserCard(  $("#acntNumber").val().trim(), 
-    								$("#billID").val().trim(),
-    								$("#payAmount").val().trim(),
-    								$("#cardNumber").val().trim(),
-    								$("#expiry").val().trim()
-    								$("#CVC").val().trim()
-                                   
-                                ); 
+        return; 
+    } 
 
-    $("#colCard").append(card);
+    // if hidCardSave value is null set as POST else set as PUT
+    var type = ($("#hidCardSave").val() == "") ? "POST" : "PUT";
 
-    //success alert
-    $("#alertSuccess").text("Saved successfully.");
-    $("#alertSuccess").show(); 
-
-    //clearing the form 
-    $("#formCard")[0].reset();
-    
+    // ajax communication
+    $.ajax({
+        url: "PayAPI",
+        type: type,
+        data: $("#formCard").serialize(),
+        dataType: "text",
+        complete: function(response, status) {
+            onCardSaveComplete(response.responseText, status);
+        }
+    });
 });
 
-// REMOVE ============================================
-$(document).on("click",".remove",function(event){
-    //identifying the card containing the remove button and remove it
-    $(this).closest(".card").remove();
+// after completing save request
+function onCardSaveComplete(response, status) {
 
-    //show alert
-    $("#alertSuccess").text("Removed successfully");
-    $("#alertSuccess").show();
+    if (status == "success") { //if the response status is success
+        var resultSet = JSON.parse(response);
 
-})
-
-// FORM VALIDATION ============================================
-function validateCardForm() {
-	
-	//Card Number
-    if ($("#cardNumber").val().trim() == "") {
-        return "Insert Card Number";
-    }
+        if (resultSet.status.trim() === "success") { //if the json status is success
+            //display success alert
+            $("#alertSuccess").text("Successfully saved");
+            $("#alertSuccess").show();
     
+            //load data in json to html
+            $("#divCardGrid").html(resultSet.data);
 
-    //Account Number
-    if ($("#acntNumber").val().trim() == "") {
-        return "Insert Account Number";
-    }
-    
+        } else if (resultSet.status.trim() === "error") { //if the json status is error
+            //display error alert
+            $("#alertError").text(resultSet.data);
+            $("#alertError").show();
+        }
+    } else if (status == "error") { 
+        //if the response status is error
+        $("#alertError").text("Error while saving");
+        $("#alertError").show();
+    } else { 
+        //if an unknown error occurred
+        $("#alertError").text("Unknown error occurred while saving");
+        $("#alertError").show();
+    } 
 
-    //Expiry date
-    if ($("#expiry").val().trim() == "") {
-        return "Insert Expiry date";
-    }
-    
-    //CVC
-    if ($("#CVC").val().trim() == "") {
-        return "Insert CVC";
-    }
-
-
-    return true
+    //resetting the form
+    $("#hidCardSave").val("");
+    $("#formCard")[0].reset();
 }
 
-// DISPLAY CARD ============================================
-function getUserCards(cardNumber,acntNumber,expiry,CVC) { 
-    var card = ""; 
-
-  
-
-    //Generate cards 
+// UPDATE
+//to identify the update button we didn't use an id we used a class
+$(document).on("click", ".btnUpdate", function(event) 
+{ 
+    //get item id from the data-itemid attribute in update button
+    $("#hidCardSave").val($(this).data('cardNumber')); 
+    //get data from <td> element
+    $("#acntNumber").val($(this).closest("tr").find('td:eq(0)').text()); 
+    $("#expiry").val($(this).closest("tr").find('td:eq(1)').text()); 
+    $("#CVC").val($(this).closest("tr").find('td:eq(2)').text()); 
     
-    card += "<div class=\"payment card bg-light m-2\" style=\"max-width: 10rem;  float: left;\">"; 
-    card += "<div class=\"card-body\">";
-    card += title + " " + cardNumber + ","; 
-    card += "<br>";  
-    card += title + " " + acntNumber + ","; 
-    card += "<br>"; 
-    card += title + " " + expiry + ",";
-    card += "<br>"; 
-    card += title + " " + CVC + ","; 
-    card += "</div>"; 
-    card += "<input type=\"button\" value=\"Remove\" class=\"btn btn-danger remove\">"; 
-    card += "</div>";
- 
-    return card; 
+}); 
+
+// DELETE
+$(document).on("click",".btnRemove", function(event) {
+    // ajax communication
+    $.ajax({
+        url: "PayAPI",
+        type: "DELETE",
+        data: "cardNumber=" + $(this).data("cardNumber"),
+        dataType: "text",
+        complete: function(response, status) {
+            onCardDeleteComplete(response.responseText, status);
+        }
+    });
+});
+
+// after completing delete request
+function onCardDeleteComplete(response, status) {
+
+    if (status == "success") { //if the response status is success
+        var resultSet = JSON.parse(response);
+
+        if (resultSet.status.trim() === "success") { //if the json status is success
+            //display success alert
+            $("#alertSuccess").text("Successfully deleted");
+            $("#alertSuccess").show();
+    
+            //load data in json to html
+            $("#divCardGrid").html(resultSet.data);
+
+        } else if (resultSet.status.trim() === "error") { //if the json status is error
+            //display error alert
+            $("#alertError").text(resultSet.data);
+            $("#alertError").show();
+        }
+    } else if (status == "error") { 
+        //if the response status is error
+        $("#alertError").text("Error while deleting");
+        $("#alertError").show();
+    } else { 
+        //if an unknown error occurred
+        $("#alertError").text("Unknown error occurred while deleting");
+        $("#alertError").show();
+    } 
+}
+
+
+// VALIDATION
+function validateCardForm() { 
+    // card number
+    if ($("#cardNumber").val().trim() == "") 
+    { 
+        return "Insert card number."; 
+    } 
+    
+    // account number 
+    if ($("#acntNumber").val().trim() == "") 
+    { 
+        return "Insert account number."; 
+    } 
+    
+    // expiry
+    if ($("#expiry").val().trim() == "") 
+    { 
+        return "Insert expiry date."; 
+    } 
+    
+    // CVC
+    if ($("#CVC").val().trim() == "") 
+    { 
+        return "Insert CVC."; 
+    } 
+    
+    
+    return true; 
 } 
 
+
+ 

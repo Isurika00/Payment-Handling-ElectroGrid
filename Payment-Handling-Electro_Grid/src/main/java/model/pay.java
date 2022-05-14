@@ -8,6 +8,7 @@ import java.sql.Statement;
 import util.DBconnect;
 
 public class pay {
+	
 
 	// create object of dbconnect
 	DBconnect dbcon = new DBconnect();
@@ -46,11 +47,13 @@ public class pay {
 			// close the connection
 			con.close();
 
-			output = "payment successfully done.";
+			String newpay = displayPayments(); 
+			 
+			output = "{\"status\":\"success\", \"data\": \"" + newpay + "\"}";
 
 		} catch (Exception e) {
 
-			output = "Error while processing the payment.";
+			output = "{\"status\":\"error\", \"data\": \"Error while processing the payment.\"}";
 			System.err.println(e.getMessage());
 
 		}
@@ -88,11 +91,13 @@ public class pay {
 			// close the connection
 			con.close();
 
-			output = "card successfully inserted";
+			String newcard = displayCard(cardNumber); 
+			 
+			output = "{\"status\":\"success\", \"data\": \"" + newcard + "\"}";
 
 		} catch (Exception e) {
 
-			output = "Error while processing the card details.";
+			output = "{\"status\":\"error\", \"data\": \"Error while inserting the card.\"}";
 			System.err.println(e.getMessage());
 
 		}
@@ -137,8 +142,14 @@ public class pay {
 				String date = rset.getString("date");
 
 				// display payments in a tabular manner
-				output += "<tr> <td> " + paymentID + "</td><td>" + acntNumber + "</td><td>" + billID + "</td><td>" + payAmount + "</td><td>"
-						+ cardNumber + "</td><td>" + expiry + "</td><td>" + CVC + "</td><td>" + date + "</td></tr>";
+				output += "<tr> <td> " + paymentID + "</td>"
+						+ "<td>" + acntNumber + "</td>"
+						+ "<td>" + billID + "</td>"
+						+ "<td>" + payAmount + "</td>"
+					    + "<td>" + cardNumber + "</td>"
+					    + "<td>" + expiry + "</td>"
+					    + "<td>" + CVC + "</td>"
+					    + "<td>" + date + "</td></tr>";
 
 			}
 
@@ -250,16 +261,16 @@ public class pay {
 				String CVC = Integer.toString(rs.getInt("CVC"));
 
 				// show details in a tabular manner
-				output += "<tr> <td> Card Number</td> <td>" + cNumber + "</td> </tr>";
+				output += "<tr> <td> Card Number</td> <td><input id='hidCardUpdate' name='hidCardUpdate' type='hidden' value='"+cNumber+"'></td> </tr>";
 				output += "<tr> <td> Account Number </td> <td>" + acntNumber + "</td> </tr>";
 				output += "<tr> <td> Expiry Date </td> <td>" + expiry + "</td> </tr>";
 				output += "<tr> <td> CVC </td> <td>" + CVC + "</td> </tr>";
 
 				// buttons
-				output += "<tr> <td colspan='2'><center><br/><input id='hidCardUpdate' name='hidCardUpdate' type='hidden' value='"+cardNumber+"'> <br/><br/>"
-						+ "<form method='post' action='card.jsp'>" + "<input id='hidCardDelete' name='hidCardDelete' type='submit' value='" + cardNumber + "'>"
-						+ "</form></center></td> </tr>";
-			}
+				output += "<tr> <td colspan='2'><center><br/><input id='btnUpdate' name='btnUpdate' class='btnUpdate btn btn-secondary' type='button' value='Update' data-cardNumber='"+cardNumber+"'> <br/><br/>"
+						+ "<input id='btnRemove' name='btnRemove' class='btnRemove btn btn-danger' type='button' value='Remove' data-cardNumber='" + cardNumber + "'>"
+						+ "</center></td> </tr>";
+			} 
 
 			con.close();
 
@@ -306,11 +317,14 @@ public class pay {
 			// close the connection
 			con.close();
 
-			output = "card Updated successfully";
+			String newcard = displayCard(cardNumber); 
+			 
+			output = "{\"status\":\"success\", \"data\": \"" + newcard + "\"}";
+
 		}
 
 		catch (Exception e) {
-			output = "Error while Updating the card.";
+			output = "{\"status\":\"error\", \"data\": \"Error while updating card.\"}";
 			System.err.println(e.getMessage());
 
 		}
@@ -344,10 +358,12 @@ public class pay {
 			// close the connection
 			con.close();
 
-			output = "Card deleted successfully";
+			String newcard = displayCard(cardNumber); 
+			 
+			output = "{\"status\":\"success\", \"data\": \"" + newcard + "\"}";
 
 		} catch (Exception e) {
-			output = "Error while deleting the Card.";
+			output = "{\"status\":\"error\", \"data\": \"Error while deleting card.\"}";
 			System.err.println(e.getMessage());
 
 		}

@@ -2,39 +2,14 @@
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1"
 	pageEncoding="ISO-8859-1"%>
 
-<%
-//Save---------------------------------
-if (request.getParameter("cardNumber") != null) {
-	pay cardObj = new pay();
-	String stsMsg = "";
-	
-	//Insert--------------------------
-	if (request.getParameter("hidCardSave") == "") {
-		stsMsg = cardObj.createCard(request.getParameter("cardNumber"), request.getParameter("acntNumber"),
-		request.getParameter("expiry"), request.getParameter("CVC"));
-	} 
-	
-	else//Update----------------------
-	{
-		stsMsg = cardObj.updateCard(request.getParameter("hidCardSave"), 
-		request.getParameter("acntNumber"), request.getParameter("expiry"), request.getParameter("CVC"));
-	}
-	session.setAttribute("statusMsg", stsMsg);
-}
-//Delete-----------------------------
-if (request.getParameter("hidCardDelete") != null) {
-	pay cardObj = new pay();
-	String stsMsg = cardObj.deleteCard(request.getParameter("hidCardDelete"));
-	session.setAttribute("statusMsg", stsMsg);
-}
-%>
+
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="ISO-8859-1">
 <title>Payment Details</title>
 <link rel="stylesheet" href="Views/bootstrap.min.css">
-<script src="Components/jquery-3.2.1.min.js"></script>
+<script src="Components/jquery-3.6.0.min.js"></script>
 <script src="Components/card.js"></script>
 
 </head>
@@ -81,13 +56,14 @@ if (request.getParameter("hidCardDelete") != null) {
 					</div>
 
 
-					<div id="alertSuccess" class="alert alert-success"></div>
-					<div id="alertError" class="alert alert-danger"></div>
 					<input type="button" id="btnSave" name="btnSave" value="Save"
 						class="btn btn-primary"> <input type="hidden"
 						id="hidCardSave" name="hidCardSave" value="">
 
 				</form>
+
+				<div id="alertSuccess" class="alert alert-success"></div>
+				<div id="alertError" class="alert alert-danger"></div>
 			</div>
 		</div>
 
@@ -96,6 +72,13 @@ if (request.getParameter("hidCardDelete") != null) {
 		<div class="row">
 			<div class="col-12" id="colCard"></div>
 		</div>
+		<div id="divCardGrid">
+			<%
+			pay cardObj = new pay();
+			out.print(cardObj.displayCard(""));
+			%>
+		</div>
+
 	</div>
 
 </body>
